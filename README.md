@@ -1,9 +1,8 @@
 # General
-This repository installs different profiles to your user's profile.
+This repository installs the latest GitHub Actions runner.
 
 # Installation
+## Linux
 ```
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Birchi/unix-github-action-runner/install.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Birchi/github-action-runner/refs/heads/development/install.sh)"
 ```
-
-# Command
