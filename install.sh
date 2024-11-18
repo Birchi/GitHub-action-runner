@@ -63,7 +63,7 @@ def normalize_os_n_arch():
     else:
         raise Exception("OS {} is not supported yet.".format(os_name))
     arch = platform.machine().lower()
-    if arch = "x86_64":
+    if arch == "x86_64":
         arch = "x64"
     return  "{}-{}".format(os_name, arch)
 
