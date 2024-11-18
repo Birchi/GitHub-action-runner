@@ -1,5 +1,5 @@
 # General
-This repository installs the latest GitHub Actions runner.
+This repository installs the latest GitHub Actions release.
 
 # Installation
 ## Linux

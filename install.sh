@@ -54,7 +54,6 @@ import platform
 
 def normalize_os_n_arch():
     os_name = platform.system()
-    arch = platform.machine().lower()
     if os_name == "Darwin":
         os_name = "osx"
     elif os_name == "Linux":
@@ -63,6 +62,9 @@ def normalize_os_n_arch():
         os_name = "win"
     else:
         raise Exception("OS {} is not supported yet.".format(os_name))
+    arch = platform.machine().lower()
+    if arch = "x86_64":
+        arch = "x64"
     return  "{}-{}".format(os_name, arch)
 
 if __name__ == "__main__":
