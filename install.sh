@@ -2,7 +2,10 @@
 ##
 # Variables
 ##
-directory=$(pwd)/runner
+directory=${HOME}/runners
+name=
+repository=
+token=
 
 ##
 # Function
@@ -12,17 +15,21 @@ function usage(){
 This script installs a github action runner.
   
 Options:
-  -d, --directory       Defines the install directory of a github action runner. Default value is current directory.
+  -d, --directory       Defines the install directory of a github action runner. Default value is ${HOME}/runners.
+  -n, --name            Defines name of a runner.
+  -r, --repository      Defines url of a repository.
+  -t, --token           Defines registration token for repository.
   -h, --help            Shows this message.
   
 Examples:
-  $(dirname $0)/install.sh
+  $(dirname $0)/install.sh --name NAME --repository REPO --token TOKEN
+  $(dirname $0)/install.sh -n NAME -r REPO -t TOKEN
 EOF
 }
 
 function parse_cmd_args() {
-    args=$(getopt --options d:h \
-                  --longoptions directory:,help -- "$@")
+    args=$(getopt --options d:n:r:t:h \
+                  --longoptions directory:,name:,repository:,token:,help -- "$@")
     
     if [[ $? -ne 0 ]]; then
         echo "Failed to parse arguments!" && usage
@@ -33,6 +40,9 @@ function parse_cmd_args() {
         case "$1" in
             -h | --help) usage && exit 0 ;;
             -d | --directory) directory="$(eval echo $2)" ; shift 1 ;;
+            -n | --name) name="$(eval echo $2)" ; shift 1 ;;
+            -r | --repository) repository="$(eval echo $2)" ; shift 1 ;;
+            -t | --token) token="$(eval echo $2)" ; shift 1 ;;
             --) ;;
              *) ;;
         esac
@@ -78,18 +88,33 @@ if __name__ == "__main__":
         raise Exception(json_object.get("message", "Something went wrong"))
 EOF
 )
-
-    if ! [ -d ${directory} ] ; then
-        mkdir -p ${directory}
+    if [[ "${name}" == "" ]] ; then
+        echo "Please, define a name via --name NAME"
+        exit 1
+    fi
+    
+    if [[ "${repository}" == "" ]] ; then
+        echo "Please, define an URL of a repository via --repository REPO"
+        exit 1
     fi
 
+    if [[ "${token}" == "" ]] ; then
+        echo "Please, define a token via --token TOKEN"
+        exit 1
+    fi
+
+    runner_directory=${directory}/${name}
+    if ! [ -d ${runner_directory} ] ; then
+        mkdir -p ${runner_directory}
+    fi
+    
     download_urls=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | python3 -c "${download_url_praser}")
     for download_url in $download_urls ; do
-        file_path=${directory}/$(basename $download_url)
+        file_path=${runner_directory}/$(basename $download_url)
         echo "Starting to download ${download_url}"
-        curl -s -L $download_url --output ${file_path}
-        echo "Unpacking ${file_path} to ${directory}"
-        tar xzf ${file_path} -C ${directory}
+        curl -s -L ${download_url} --output ${file_path}
+        echo "Unpacking ${file_path} to ${runner_directory}"
+        tar xzf ${file_path} -C ${runner_directory}
         echo "Removing ${file_path}"
         rm ${file_path}
     done
