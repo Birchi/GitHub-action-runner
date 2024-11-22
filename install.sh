@@ -117,5 +117,14 @@ EOF
         tar xzf ${file_path} -C ${runner_directory}
         echo "Removing ${file_path}"
         rm ${file_path}
+        cd ${runner_directory}
+        ./config.sh --unattended --url ${repository} --token ${token} --replace --name ${name}
+        escaped_runner_directory=$(echo "${runner_directory}" | sed 's#\/#\\/#g')
+        if [ -d /etc/systemd/system ] ; then
+            cat ${runner_directory}/bin/actions.runner.service.template | grep -v "User=" | sed "s/{{RunnerRoot}}/${escaped_runner_directory}/g" | sed "s/{{Description}}/Github action runners - ${runner_directory}/g" > /etc/systemd/system/github-runner-${name}.service
+            systemctl daemon-reload
+            systemctl start github-runner-${name}.service
+            systemctl enable github-runner-${name}.service
+        fi
     done
 }
