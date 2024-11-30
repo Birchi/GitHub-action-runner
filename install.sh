@@ -50,12 +50,22 @@ function parse_cmd_args() {
     done 
 }
 
+function command_exists() {
+    if ! command -v $1 2>&1 >/dev/null ; then
+        echo "Please, install $1 via your package manager."
+        exit 1
+    fi
+}
+
 ##
 # Main
 ##
 {
 
     parse_cmd_args "$@"
+
+    command_exists curl
+    command_exists python3
 
     download_url_praser=$(cat <<EOF
 import sys
@@ -75,6 +85,8 @@ def normalize_os_n_arch():
     arch = platform.machine().lower()
     if arch == "x86_64":
         arch = "x64"
+    elif arch == "aarch64":
+        arch = "arm64"
     return  "{}-{}".format(os_name, arch)
 
 if __name__ == "__main__":
@@ -119,9 +131,10 @@ EOF
         rm ${file_path}
         cd ${runner_directory}
         ./config.sh --unattended --url ${repository} --token ${token} --replace --name ${name}
+        escaped_name=$(echo "${name}" | sed 's#\/#\\/#g')
         escaped_runner_directory=$(echo "${runner_directory}" | sed 's#\/#\\/#g')
         if [ -d /etc/systemd/system ] ; then
-            cat ${runner_directory}/bin/actions.runner.service.template | grep -v "User=" | sed "s/{{RunnerRoot}}/${escaped_runner_directory}/g" | sed "s/{{Description}}/Github action runners - ${runner_directory}/g" > /etc/systemd/system/github-runner-${name}.service
+            cat ${runner_directory}/bin/actions.runner.service.template | grep -v "User=" | sed "s/{{RunnerRoot}}/${escaped_runner_directory}/g" | sed "s/{{Description}}/Github action runners - ${escaped_name}/g" > /etc/systemd/system/github-runner-${name}.service
             systemctl daemon-reload
             systemctl start github-runner-${name}.service
             systemctl enable github-runner-${name}.service

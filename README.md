@@ -1,6 +1,10 @@
 # General
 This repository installs the latest GitHub Actions release.
 
+# Prerequirements
+- curl installed
+- python3 installed
+
 # Installation
 ## Linux
 ```
